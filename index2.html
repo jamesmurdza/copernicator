@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>hello phaser!</title>
+        <script src="http://cdn.jsdelivr.net/phaser/2.2.2/phaser.min.js"></script>
+    </head>
+    <body>
+
+    <script type="text/javascript">
+
+    window.onload = function() {
+
+        var game = new Phaser.Game(1000, 1000, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+		function preload() {
+
+		    game.load.baseURL = 'http://examples.phaser.io/assets/';
+		    game.load.crossOrigin = 'anonymous';
+
+		    game.load.image('sun', 'sprites/yellow_ball.png');
+		    game.load.image('earth', 'sprites/green_ball.png');
+		}
+		
+		var sun, planets, center, bmd;
+		var t;
+
+		var scale = 50;
+		var timeScale = 50;
+
+		function newPlanet(image, distance, period) {
+		    var planet = game.add.sprite(distance, 0, 'earth');
+		    planet.width = planet.height = 10;
+		    planet.distance = distance;
+		    planet.period = period;
+		    planet.anchor.set(0.5);
+		    return planet;
+		}
+
+		function create() {
+		    game.world.setBounds(-1000, -1000, 2000, 2000);
+    
+		    t = 0;
+    
+		    var sun = game.add.sprite(0, 0, 'sun');
+		    sun.anchor.set(0.5);
+
+		    planets = [
+		    newPlanet('earth', .39, .24),
+		    newPlanet('earth', .72, .62),
+		    newPlanet('earth', 1, 1),
+		    newPlanet('earth', 1.52, 1.88),
+		    newPlanet('earth', 5.20, 11.86),
+		    newPlanet('earth', 9.54, 29.46)
+		        ];
+
+		    bmd = game.add.bitmapData(game.world.bounds.width, game.world.bounds.height);
+		    bmd.context.fillStyle = '#ffffff';
+
+		    var bg = game.add.sprite(0, 0, bmd);
+		    bg.fixedToCamera = true;
+
+		    center = planets[5];
+		    center.updateOrbit();
+		    game.camera.follow(center);
+		}
+		
+		Phaser.Sprite.prototype.updateOrbit = function() {
+		    this.y = scale*this.distance*Math.sin(t*Math.PI/timeScale/this.period);
+		    this.x = scale*this.distance*Math.cos(t*Math.PI/timeScale/this.period);
+    
+		    bmd.context.fillRect(this.x-center.x+game.camera.width/2, this.y-center.y+game.camera.height/2, 1, 1);
+		    bmd.dirty = true;
+		}
+
+		function update()
+		{
+		    t++;
+    
+		    for (var i in planets)
+		    {
+		        planets[i].updateOrbit();
+		    }
+		}
+		
+		function render() {
+
+		}
+    };
+
+    </script>
+
+    </body>
+</html>

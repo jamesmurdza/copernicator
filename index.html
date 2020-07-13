@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>hello phaser!</title>
+        <script src="//cdn.jsdelivr.net/phaser/2.2.2/phaser.min.js"></script>
+		<style>
+		body {
+			background-color: #222;
+			overflow: hidden;
+			padding: 0;
+			margin: 0;
+		}
+		canvas {
+		  position: fixed;
+		  top: 50%;
+		  left: 50%;
+		  margin-top: -1000px;
+		  margin-left: -1000px;
+		}
+		.menu {
+			position: fixed; top:20px; left:20px; z-index:100;
+		}
+		</style>
+    </head>
+    <body>
+
+	<div class="menu">
+	<select onchange="setCenter(this.value)">
+		<option value="0">Sun</option>
+		<option value="1">Mercury</option>
+		<option value="2">Venus</option>
+		<option value="3">Earth</option>
+		<option value="4">Mars</option>
+		<option value="5">Jupiter</option>
+		<option value="6">Saturn</option>
+	</select>
+	
+	<input type="button" onclick="zoom-=.2;document.body.children[2].style.zoom=zoom;" value="-" />
+	<input type="button" onclick="zoom+=.2;document.body.children[2].style.zoom=zoom;" value="+" />
+	</div>
+
+    <script type="text/javascript">
+	
+	var zoom = 1;
+		var size = 2000;
+
+		var game;
+		var sun, planets, center, bmd;
+	
+	function setCenter(i)
+	{
+		bmd.clear();
+		game.camera.unfollow();
+		
+		if (i > 0)
+		{
+			center = planets[i-1];
+			center.updateOrbit();
+		}
+		else
+		{
+			center = sun;
+		}
+		
+		game.camera.follow(center);
+	}
+
+    window.onload = function() {
+
+        game = new Phaser.Game(size, size, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+		function preload() {
+
+		    game.load.baseURL = 'http://examples.phaser.io/assets/';
+		    game.load.crossOrigin = 'anonymous';
+
+		    game.load.image('sun', 'sprites/yellow_ball.png');
+		    game.load.image('earth', 'sprites/green_ball.png');
+		    game.load.image('moon', 'sprites/blue_ball.png');
+		}
+		
+		var t;
+
+		var scale = 100;
+		var timeScale = 50;
+
+		function newPlanet(image, distance, period) {
+		    var planet = game.add.sprite(distance, 0, 'earth');
+		    planet.width = planet.height = 10;
+		    planet.distance = distance;
+		    planet.period = period;
+		    planet.anchor.set(0.5);
+		    return planet;
+		}
+
+		function create() {
+		    game.world.setBounds(-size, -size, 2*size, 2*size);
+    
+		    t = 0;
+    
+		    sun = game.add.sprite(0, 0, 'sun');
+		    sun.anchor.set(0.5);
+
+		    planets = [
+		    newPlanet('earth', .39, .24),
+		    newPlanet('earth', .72, .62),
+		    newPlanet('earth', 1, 1),
+		    newPlanet('earth', 1.52, 1.88),
+		    newPlanet('earth', 5.20, 11.86),
+		    newPlanet('earth', 9.54, 29.46)
+		        ];
+
+		    bmd = game.add.bitmapData(game.world.bounds.width, game.world.bounds.height);
+		    bmd.context.fillStyle = '#ffffff';
+
+		    var bg = game.add.sprite(0, 0, bmd);
+		    bg.fixedToCamera = true;
+
+		    setCenter(0);
+		}
+		
+		Phaser.Sprite.prototype.updateOrbit = function() {
+		    this.y = scale*this.distance*Math.sin(t*Math.PI/timeScale/this.period);
+		    this.x = scale*this.distance*Math.cos(t*Math.PI/timeScale/this.period);
+    
+		    bmd.context.fillRect(this.x-center.x+game.camera.width/2, this.y-center.y+game.camera.height/2, 1, 1);
+		    bmd.dirty = true;
+		}
+
+		function update()
+		{
+		    t++;
+    
+		    for (var i in planets)
+		    {
+		        planets[i].updateOrbit();
+		    }
+		}
+		
+		function render() {
+
+		}
+    };
+	
+    </script>
+
+    </body>
+</html>
