@@ -4,10 +4,10 @@ let timeScale = 50;
 
 let zoom = 1;
 let size = 2000;
-let game, planets, center, bmd, centerX, centerY;
+let game, planets, center, background, centerX, centerY;
 
 function setCenterBody(i) {
-	bmd.clear();
+	background.clear();
 	center = planets[i];
 }
 
@@ -27,8 +27,8 @@ Phaser.Sprite.prototype.updatePosition = function () {
 	this.x = (this == center) ? 0 : this.calculateY(t) - centerY;
 
 	// Draw the trail.
-	bmd.context.fillRect(this.x + size / 2, this.y + size / 2, 1, 1);
-	bmd.dirty = true;
+	background.context.fillRect(this.x + size / 2, this.y + size / 2, 1, 1);
+	background.dirty = true;
 }
 
 window.onload = function () {
@@ -70,10 +70,10 @@ window.onload = function () {
 			newPlanet('earth', 9.54, 29.46)
 		];
 
-		bmd = game.add.bitmapData(game.world.bounds.width, game.world.bounds.height);
-		bmd.context.fillStyle = '#ffffff';
+		background = game.add.bitmapData(game.world.bounds.width, game.world.bounds.height);
+		background.context.fillStyle = '#ffffff';
 
-		var bg = game.add.sprite(-size / 2, -size / 2, bmd);
+		game.add.sprite(-size / 2, -size / 2, background);
 
 		game.camera.x = -size / 2;
 		game.camera.y = -size / 2;
