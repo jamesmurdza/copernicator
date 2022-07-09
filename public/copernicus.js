@@ -1,27 +1,41 @@
+// Fixed settings:
 let t = 0;
 let scale = 100;
 let timeScale = 50;
-
-let zoom = 1;
 let size = 2000;
-let game, planets, center, background, centerX, centerY;
 
+// Game state:
+let zoom = 1;
+let center = null;
+
+let planets, background;
+let centerX, centerY;
+
+let game = new Phaser.Game(size, size, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+// Body menu:
 function setCenterBody(i) {
 	background.clear();
 	center = planets[i];
 }
 
+// Zoom buttons:
 function setZoom(z) {
-	zoom = z;
-	document.body.children[2].style.zoom = zoom;
+	zoom += z;
+	document.querySelector("canvas").style.zoom = zoom;
 }
+
+// Planet calculate X position from orbit
 Phaser.Sprite.prototype.calculateX = function (t) {
 	return scale * this.distance * Math.sin(t * Math.PI / timeScale / this.period);
 }
 
+// Planet calculate Y position from orbit
 Phaser.Sprite.prototype.calculateY = function (t) {
 	return scale * this.distance * Math.cos(t * Math.PI / timeScale / this.period);
 }
+
+// Planet update position in game
 Phaser.Sprite.prototype.updatePosition = function () {
 	this.y = (this == center) ? 0 : this.calculateX(t) - centerX;
 	this.x = (this == center) ? 0 : this.calculateY(t) - centerY;
@@ -31,23 +45,21 @@ Phaser.Sprite.prototype.updatePosition = function () {
 	background.dirty = true;
 }
 
-window.onload = function () {
+// Preload
+function preload() {
+	game.load.baseURL = 'http://examples.phaser.io/assets/';
+	game.load.crossOrigin = 'anonymous';
 
-	game = new Phaser.Game(size, size, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+	game.load.image('sun', 'sprites/yellow_ball.png');
+	game.load.image('earth', 'sprites/green_ball.png');
+	game.load.image('moon', 'sprites/blue_ball.png');
+}
 
-	function preload() {
+// Set up game
+function create() {
 
-		game.load.baseURL = 'http://examples.phaser.io/assets/';
-		game.load.crossOrigin = 'anonymous';
-
-		game.load.image('sun', 'sprites/yellow_ball.png');
-		game.load.image('earth', 'sprites/green_ball.png');
-		game.load.image('moon', 'sprites/blue_ball.png');
-	}
-
-
-	function newPlanet(image, distance, period) {
-		var planet = game.add.sprite(distance, 0, image);
+	let newPlanet = function(image, distance, period) {
+		let planet = game.add.sprite(distance, 0, image);
 		planet.width = planet.height = 10;
 		planet.distance = distance;
 		planet.period = period;
@@ -55,39 +67,34 @@ window.onload = function () {
 		return planet;
 	}
 
-	function create() {
-		game.world.setBounds(-size, -size, 2 * size, 2 * size);
+	// Planet, radius, period
+	planets = [
+		newPlanet('sun', 0, 1),
+		newPlanet('earth', .39, .24),
+		newPlanet('earth', .72, .62),
+		newPlanet('earth', 1, 1),
+		newPlanet('earth', 1.52, 1.88),
+		newPlanet('earth', 5.20, 11.86),
+		newPlanet('earth', 9.54, 29.46)
+	];
 
-		t = 0;
+	background = game.add.bitmapData(game.world.bounds.width, game.world.bounds.height);
+	background.context.fillStyle = '#ffffff';
 
-		planets = [
-			newPlanet('sun', 0, 1),
-			newPlanet('earth', .39, .24),
-			newPlanet('earth', .72, .62),
-			newPlanet('earth', 1, 1),
-			newPlanet('earth', 1.52, 1.88),
-			newPlanet('earth', 5.20, 11.86),
-			newPlanet('earth', 9.54, 29.46)
-		];
+	game.world.setBounds(-size, -size, 2 * size, 2 * size);
+	game.add.sprite(-size/2, -size/2, background);
+	game.camera.x = -size/2;
+	game.camera.y = -size/2;
 
-		background = game.add.bitmapData(game.world.bounds.width, game.world.bounds.height);
-		background.context.fillStyle = '#ffffff';
+	setCenterBody(0);
+}
 
-		game.add.sprite(-size / 2, -size / 2, background);
-
-		game.camera.x = -size / 2;
-		game.camera.y = -size / 2;
-		setCenterBody(0);
+// Each frame, update planet positions.
+function update() {
+	t++;
+	centerX = center.calculateX(t);
+	centerY = center.calculateY(t);
+	for (let i in planets) {
+		planets[i].updatePosition();
 	}
-
-	function update() {
-		t++;
-		centerX = center.calculateX(t);
-		centerY = center.calculateY(t);
-		for (var i in planets) {
-			planets[i].updatePosition();
-		}
-	}
-
-};
-
+}
