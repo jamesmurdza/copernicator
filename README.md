@@ -6,4 +6,4 @@ One can imagine that such models could have been invented by Martians, Venusians
 
 This is a Javascript canvas-based animation which draws the orbits of the planets in relation to a chosen planet.
 
-![Earth](/Users/james/Desktop/Earth.png)
+![Earth](./Earth.png)
