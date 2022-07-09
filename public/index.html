@@ -4,6 +4,8 @@
         <meta charset="UTF-8" />
         <title>Hello Copernicus!</title>
         <script src="https://cdn.jsdelivr.net/phaser/2.2.2/phaser.min.js"></script>
+		<script src="./copernicus.js"></script>
+
 		<style>
 		body {
 			background-color: #222;
@@ -22,11 +24,12 @@
 			position: fixed; top:20px; left:20px; z-index:100;
 		}
 		</style>
+
     </head>
     <body>
 
 	<div class="menu">
-	<select onchange="setCenter(this.value)">
+	<select onChange="setCenterBody(this.value)">
 		<option value="0">Sun</option>
 		<option value="1">Mercury</option>
 		<option value="2">Venus</option>
@@ -36,106 +39,9 @@
 		<option value="6">Saturn</option>
 	</select>
 	
-	<input type="button" onclick="zoom-=.2;document.body.children[2].style.zoom=zoom;" value="-" />
-	<input type="button" onclick="zoom+=.2;document.body.children[2].style.zoom=zoom;" value="+" />
+	<input type="button" onClick="setZoom(zoom-.2)" value="-" />
+	<input type="button" onClick="setZoom(zoom+.2)" value="+" />
 	</div>
-
-    <script type="text/javascript">
-	
-	var zoom = 1;
-		var size = 2000;
- 
-	 	var game;
-		var planets, center, bmd;
-		var centerX, centerY;
-	
-	function setCenter(i)
-	{
-		bmd.clear();
-		center = planets[i];
-	}
-
-    window.onload = function() {
-
-        game = new Phaser.Game(size, size, Phaser.AUTO, '', { preload: preload, create: create, update: update });
-
-		function preload() {
-
-		    game.load.baseURL = 'http://examples.phaser.io/assets/';
-		    game.load.crossOrigin = 'anonymous';
-
-		    game.load.image('sun', 'sprites/yellow_ball.png');
-		    game.load.image('earth', 'sprites/green_ball.png');
-		    game.load.image('moon', 'sprites/blue_ball.png');
-		}
-		
-		var t;
-		var scale = 100;
-		var timeScale = 50;
-
-		function newPlanet(image, distance, period) {
-		    var planet = game.add.sprite(distance, 0, image);
-		    planet.width = planet.height = 10;
-		    planet.distance = distance;
-		    planet.period = period;
-		    planet.anchor.set(0.5);
-		    return planet;
-		}
-
-		function create() {
-		    game.world.setBounds(-size, -size, 2*size, 2*size);
-    
-		    t = 0;
-    
-		    planets = [
-			newPlanet('sun', 0, 1),
-		    newPlanet('earth', .39, .24),
-		    newPlanet('earth', .72, .62),
-		    newPlanet('earth', 1, 1),
-		    newPlanet('earth', 1.52, 1.88),
-		    newPlanet('earth', 5.20, 11.86),
-		    newPlanet('earth', 9.54, 29.46)
-		        ];
-
-		    bmd = game.add.bitmapData(game.world.bounds.width, game.world.bounds.height);
-		    bmd.context.fillStyle = '#ffffff';
-
-		    var bg = game.add.sprite(-size/2, -size/2, bmd);
-
-		game.camera.x = -size/2;
-		game.camera.y = -size/2;
-		    setCenter(0);
-		}
-
-		Phaser.Sprite.prototype.calculateX = function(t) {
-			return scale*this.distance*Math.sin(t*Math.PI/timeScale/this.period);
-		}
-		
-		Phaser.Sprite.prototype.calculateY = function(t) {
-			return scale*this.distance*Math.cos(t*Math.PI/timeScale/this.period);
-		}
-		Phaser.Sprite.prototype.updateOrbit = function() {
-		    this.y = (this == center) ? 0 : this.calculateX(t) - centerX;
-		    this.x = (this == center) ? 0 : this.calculateY(t) - centerY;
-    
-		    bmd.context.fillRect(this.x+size/2, this.y+size/2, 1, 1);
-		    bmd.dirty = true;
-		}
-
-		function update()
-		{
-		    t++;
-			centerX = center.calculateX(t);
-			centerY = center.calculateY(t);
-		    for (var i in planets)
-		    {
-		        planets[i].updateOrbit();
-		    }
-		}
-
-    };
-	
-    </script>
 
     </body>
 </html>
