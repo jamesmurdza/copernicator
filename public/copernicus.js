@@ -6,17 +6,17 @@ let size = 2000;
 
 // Game state:
 let zoom = 1;
-let center = null;
+let center = 0;
 
 let planets, background;
-let centerX, centerY;
+let centerPlanet, centerX, centerY;
 
 let game = new Phaser.Game(size, size, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 // Body menu:
 function setCenterBody(i) {
 	background.clear();
-	center = planets[i];
+	center = i;
 }
 
 // Zoom buttons:
@@ -37,8 +37,8 @@ Phaser.Sprite.prototype.calculateY = function (t) {
 
 // Planet update position in game
 Phaser.Sprite.prototype.updatePosition = function () {
-	this.y = (this == center) ? 0 : this.calculateX(t) - centerX;
-	this.x = (this == center) ? 0 : this.calculateY(t) - centerY;
+	this.y = (this == centerPlanet) ? 0 : this.calculateX(t) - centerX;
+	this.x = (this == centerPlanet) ? 0 : this.calculateY(t) - centerY;
 
 	// Draw the trail.
 	background.context.fillRect(this.x + size / 2, this.y + size / 2, 1, 1);
@@ -85,15 +85,14 @@ function create() {
 	game.add.sprite(-size/2, -size/2, background);
 	game.camera.x = -size/2;
 	game.camera.y = -size/2;
-
-	setCenterBody(0);
 }
 
 // Each frame, update planet positions.
 function update() {
 	t++;
-	centerX = center.calculateX(t);
-	centerY = center.calculateY(t);
+	centerPlanet = planets[center];
+	centerX = centerPlanet.calculateX(t);
+	centerY = centerPlanet.calculateY(t);
 	for (let i in planets) {
 		planets[i].updatePosition();
 	}
