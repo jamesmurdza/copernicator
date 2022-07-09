@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>hello phaser!</title>
+        <title>Hello Copernicus!</title>
         <script src="https://cdn.jsdelivr.net/phaser/2.2.2/phaser.min.js"></script>
 		<style>
 		body {
@@ -44,26 +44,15 @@
 	
 	var zoom = 1;
 		var size = 2000;
-
-		var game;
-		var sun, planets, center, bmd;
+ 
+	 	var game;
+		var planets, center, bmd;
+		var centerX, centerY;
 	
 	function setCenter(i)
 	{
 		bmd.clear();
-		game.camera.unfollow();
-		
-		if (i > 0)
-		{
-			center = planets[i-1];
-			center.updateOrbit();
-		}
-		else
-		{
-			center = sun;
-		}
-		
-		game.camera.follow(center);
+		center = planets[i];
 	}
 
     window.onload = function() {
@@ -81,12 +70,11 @@
 		}
 		
 		var t;
-
 		var scale = 100;
 		var timeScale = 50;
 
 		function newPlanet(image, distance, period) {
-		    var planet = game.add.sprite(distance, 0, 'earth');
+		    var planet = game.add.sprite(distance, 0, image);
 		    planet.width = planet.height = 10;
 		    planet.distance = distance;
 		    planet.period = period;
@@ -99,10 +87,8 @@
     
 		    t = 0;
     
-		    sun = game.add.sprite(0, 0, 'sun');
-		    sun.anchor.set(0.5);
-
 		    planets = [
+			newPlanet('sun', 0, 1),
 		    newPlanet('earth', .39, .24),
 		    newPlanet('earth', .72, .62),
 		    newPlanet('earth', 1, 1),
@@ -114,33 +100,39 @@
 		    bmd = game.add.bitmapData(game.world.bounds.width, game.world.bounds.height);
 		    bmd.context.fillStyle = '#ffffff';
 
-		    var bg = game.add.sprite(0, 0, bmd);
-		    bg.fixedToCamera = true;
+		    var bg = game.add.sprite(-size/2, -size/2, bmd);
 
+		game.camera.x = -size/2;
+		game.camera.y = -size/2;
 		    setCenter(0);
 		}
+
+		Phaser.Sprite.prototype.calculateX = function(t) {
+			return scale*this.distance*Math.sin(t*Math.PI/timeScale/this.period);
+		}
 		
+		Phaser.Sprite.prototype.calculateY = function(t) {
+			return scale*this.distance*Math.cos(t*Math.PI/timeScale/this.period);
+		}
 		Phaser.Sprite.prototype.updateOrbit = function() {
-		    this.y = scale*this.distance*Math.sin(t*Math.PI/timeScale/this.period);
-		    this.x = scale*this.distance*Math.cos(t*Math.PI/timeScale/this.period);
+		    this.y = (this == center) ? 0 : this.calculateX(t) - centerX;
+		    this.x = (this == center) ? 0 : this.calculateY(t) - centerY;
     
-		    bmd.context.fillRect(this.x-center.x+game.camera.width/2, this.y-center.y+game.camera.height/2, 1, 1);
+		    bmd.context.fillRect(this.x+size/2, this.y+size/2, 1, 1);
 		    bmd.dirty = true;
 		}
 
 		function update()
 		{
 		    t++;
-    
+			centerX = center.calculateX(t);
+			centerY = center.calculateY(t);
 		    for (var i in planets)
 		    {
 		        planets[i].updateOrbit();
 		    }
 		}
-		
-		function render() {
 
-		}
     };
 	
     </script>
