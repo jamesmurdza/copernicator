@@ -1,21 +1,85 @@
-body {
-	background-color: #222;
-	overflow: hidden;
-	padding: 0;
-	margin: 0;
+:root{
+  --zoom: 1;
+  --offset-x: 0px;
+  --offset-y: 0px;
+  --unit: 5vmin;
+  --earth-period: 12s;
+  --ring-color: rgba(255,255,255,0.15);
+  --planet-size: 10px;
 }
 
-canvas {
-	position: fixed;
-	top: 50%;
-	left: 50%;
-	margin-top: -1000px;
-	margin-left: -1000px;
+*{box-sizing:border-box}
+
+html,body{height:100%}
+body{
+  background:#222;
+  color:#eee;
+  font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  margin:0; padding:0; overflow:hidden;
 }
 
-.menu {
-	position: fixed;
-	top: 20px;
-	left: 20px;
-	z-index: 100;
+.menu{
+  position:fixed; top:12px; left:12px; z-index:10;
+  background:rgba(0,0,0,0.4);
+  backdrop-filter:saturate(1.2) blur(6px);
+  color:#fff; border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px; padding:10px 12px;
+}
+.menu fieldset{border:none; margin:0 0 6px 0; padding:0}
+.menu legend{font-weight:600; margin-bottom:4px; font-size:12px; color:#ccc}
+.menu label{display:inline-flex; align-items:center; gap:6px; margin:2px 6px 2px 0; cursor:pointer}
+.menu input[type="radio"]{accent-color:#888}
+.menu input[type="radio"]:focus-visible{outline:2px solid #6cf; outline-offset:2px}
+
+.viewport{
+  width:100vmin; aspect-ratio:1/1; margin:0 auto; position:relative; overflow:hidden;
+}
+
+#system{
+  position:absolute; inset:0;
+  transform: translate(var(--offset-x), var(--offset-y)) scale(var(--zoom));
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.orbit{
+  position:absolute; top:50%; left:50%;
+  width: calc(var(--r) * 2); height: calc(var(--r) * 2);
+  transform: translate(-50%, -50%);
+  border:1px solid var(--ring-color);
+  border-radius:50%;
+}
+
+.orbiter{
+  position:absolute; top:50%; left:50%; width:0; height:0;
+  transform-origin: 0 0;
+  animation: orbit var(--duration) linear infinite;
+}
+
+.carrier{ transform: translateX(var(--r)); }
+
+@keyframes orbit{ to { transform: rotate(360deg); } }
+
+/* Planet dots */
+.planet{ position:absolute; width:var(--planet-size); height:var(--planet-size); border-radius:50%;
+  margin-left: calc(var(--planet-size) * -0.5);
+  margin-top: calc(var(--planet-size) * -0.5);
+  background: var(--color, #fff);
+  box-shadow: 0 0 8px rgba(255,255,255,0.2);
+}
+
+/* Sun sits at the center */
+.planet.sun{ --color:#ffff00; top:50%; left:50%; }
+
+/* Planet colors from original copernicus.js */
+.planet.mercury{ --color:#ff0000; }
+.planet.venus{ --color:#cccccc; }
+.planet.earth{ --color:#0000ff; }
+.planet.mars{ --color:#ff8800; }
+.planet.jupiter{ --color:#00ff00; }
+.planet.saturn{ --color:#8800ff; }
+
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce){
+  .orbiter{ animation: none; }
 }
